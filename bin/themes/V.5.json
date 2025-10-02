@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "name": "V.5",
+  "meta": {
+    "updated_at": "2025-10-02T11:24:45Z"
+  },
+  "groups": {
+    "Pin": {
+      "fill": "#000000",
+      "stroke": "#000000",
+      "stroke-width": "1.134"
+    },
+    "MainShape": {
+      "fill": "#FFF7E6",
+      "stroke": "#B33617",
+      "stroke-width": "1"
+    },
+    "SecondaryShape": {
+      "fill": "#222222",
+      "stroke": "#222222",
+      "stroke-width": "1"
+    },
+    "PowerPort": {
+      "fill": "#B33617",
+      "stroke": "#B33617",
+      "stroke-width": "1"
+    },
+    "CrossRef": {
+      "fill": "#FFF7E6",
+      "stroke": "#B33617",
+      "stroke-width": "0.4"
+    },
+    "CrossRefText": {
+      "fill": "#444444",
+      "stroke": "#444444",
+      "stroke-width": "0.1"
+    },
+    "Wire": {
+      "fill": "#07665D",
+      "stroke": "#07665D",
+      "stroke-width": "0.58"
+    },
+    "AllOtherText": {
+      "fill": "#808080",
+      "stroke": "#808080",
+      "stroke-width": "0.1"
+    }
+  }
+}
