@@ -7,7 +7,10 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]   # 13 = Intel, 14 = Apple Silicon
+    runs-on: ${{ matrix.os }}
 
     env:
       APP_NAME: "Schematic Color Picker"
@@ -88,10 +91,16 @@ jobs:
           )
           PY
 
-      - name: Upload artifacts (ZIP + DMG)
-        uses: actions/upload-artifact@v4
+      - name: Name artifacts by arch
+        run: |
+          ARCH=$(uname -m)   # x86_64 or arm64
+          ditto -c -k --keepParent "dist/$APP_NAME.app" "$APP_NAME-mac-${ARCH}.zip"
+          python - <<'PY'
+          # (dmgbuild snippet here, just like before)
+          PY
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-mac
+          name: ${{ env.APP_NAME }}-mac-${{ runner.arch }}   # x64 / ARM64 labels in Actions
           path: |
-            ${{ env.APP_NAME }}-mac.zip
+            ${{ env.APP_NAME }}-mac-*.zip
             ${{ env.APP_NAME }}.dmg
