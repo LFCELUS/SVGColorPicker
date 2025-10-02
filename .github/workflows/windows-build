@@ -1,0 +1,59 @@
+name: Windows App Build (PyQt5)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    env:
+      APP_NAME: "Schematic Color Picker"
+      ENTRYPOINT: "svg_colors_ui.py"         # change if your launcher differs
+      DATA_SVG: "bin\\svg"                   # note backslashes on Windows source side
+      DATA_THEMES: "bin\\themes"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      - name: Build .exe with PyInstaller
+        run: |
+          pyinstaller ^
+            --clean ^
+            --windowed ^
+            --noconfirm ^
+            --name "%APP_NAME%" ^
+            --hidden-import PyQt5.QtSvg ^
+            --collect-submodules PyQt5.QtSvg ^
+            --add-data "%DATA_SVG%;bin/svg" ^
+            --add-data "%DATA_THEMES%;bin/themes" ^
+            "%ENTRYPOINT%"
+
+      - name: Verify build
+        run: |
+          dir dist
+          if not exist "dist\%APP_NAME%" exit 1
+
+      - name: Zip app folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist\${env:APP_NAME}\*" -DestinationPath "${env:APP_NAME}-win.zip"
+
+      - name: Upload artifact (ZIP)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-win
+          path: ${{ env.APP_NAME }}-win.zip
