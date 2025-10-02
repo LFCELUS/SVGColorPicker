@@ -21,10 +21,6 @@ import json
 from datetime import datetime
 # ---- EDIT THESE TO MATCH YOUR PROJECT --------------------------------------
 
-# --- New: where to look for files ---
-SVG_DIR = Path("./bin/svg")           # e.g., ./bin/svg/*.svg
-THEME_DIR = Path("./bin/themes")      # e.g., ./bin/themes/*.txt
-
 # Acceptable extensions
 SVG_EXTS = {".svg"}
 THEME_EXTS = {".txt", ".json"}
@@ -67,19 +63,25 @@ DEFAULT_WIDTH = "2"
 # Uses your module from the same folder
 import svg_tools  # make sure svg_tools.py is in the same directory
 
-def _discover_files_in_dir(base: Path, exts: set[str]) -> Dict[str, str]:
-    """
-    Return {display_name: absolute_path} for all files with given extensions.
-    display_name is filename without extension (unique within dir).
-    """
-    results: Dict[str, str] = {}
-    if not base.exists():
-        return results
-    for p in sorted(base.glob("*")):
-        if p.is_file() and p.suffix.lower() in exts:
-            name = p.stem
-            results[name] = str(p.resolve())
+def _app_base_dir() -> Path:
+    # When bundled by PyInstaller, resources are unpacked to _MEIPASS
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return Path(sys._MEIPASS)
+    # Running from source
+    return Path(__file__).parent
+
+BASE_DIR = _app_base_dir()
+SVG_DIR = BASE_DIR / "bin" / "svg"
+THEME_DIR = BASE_DIR / "bin" / "themes"
+
+def _discover_files_in_dir(base: Path, exts: set[str]) -> dict[str, str]:
+    results = {}
+    if base.exists():
+        for p in sorted(base.glob("*")):
+            if p.is_file() and p.suffix.lower() in exts:
+                results[p.stem] = str(p.resolve())
     return results
+
 
 def _ensure_file_exists(path: str) -> bool:
     try:
