@@ -31,15 +31,15 @@ jobs:
 
       - name: Build .exe with PyInstaller
         run: |
-          pyinstaller ^
-            --clean ^
-            --windowed ^
-            --noconfirm ^
-            --name "%APP_NAME%" ^
-            --hidden-import PyQt5.QtSvg ^
-            --collect-submodules PyQt5.QtSvg ^
-            --add-data "%DATA_SVG%;bin/svg" ^
-            --add-data "%DATA_THEMES%;bin/themes" ^
+          & pyinstaller `
+            --clean `
+            --windowed `
+            --noconfirm `
+            --name "%APP_NAME%" `
+            --hidden-import PyQt5.QtSvg `
+            --collect-submodules PyQt5.QtSvg `
+            --add-data "%DATA_SVG%;bin/svg" `
+            --add-data "%DATA_THEMES%;bin/themes" `
             "%ENTRYPOINT%"
 
       - name: Verify build
