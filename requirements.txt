@@ -28,8 +28,7 @@ pure_eval==0.2.3
 pydantic==2.11.9
 pydantic_core==2.33.2
 Pygments==2.19.2
-PyQt5==5.15.11
-PyQt5-Qt5==5.15.2
+PyQt5==5.15.10
 PyQt5_sip==12.17.0
 python-dateutil==2.9.0.post0
 pywin32==311
@@ -48,3 +47,5 @@ typing_extensions==4.15.0
 urllib3==2.5.0
 wcwidth==0.2.14
 webencodings==0.5.1
+pyinstaller==6.9.0
+dmgbuild==1.6.2
