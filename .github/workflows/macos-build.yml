@@ -1,0 +1,84 @@
+name: macOS App Build (PyQt5 + DMG)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    env:
+      APP_NAME: "Schematic Color Picker"
+      ENTRYPOINT: "ui.py"        # <-- change if your launcher is different
+      # Folders your app expects at runtime (relative to repo root)
+      DATA_SVG: "bin/svg"
+      DATA_THEMES: "bin/themes"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build .app with PyInstaller
+        run: |
+          pyinstaller \
+            --clean \
+            --windowed \
+            --noconfirm \
+            --name "$APP_NAME" \
+            --hidden-import PyQt5.QtSvg \
+            --collect-submodules PyQt5.QtSvg \
+            --add-data "$DATA_SVG:$DATA_SVG" \
+            --add-data "$DATA_THEMES:$DATA_THEMES" \
+            "$ENTRYPOINT"
+
+      - name: Verify app exists
+        run: |
+          ls -la "dist"
+          test -d "dist/$APP_NAME.app"
+
+      - name: Zip the .app (for quick download)
+        run: |
+          ditto -c -k --keepParent "dist/$APP_NAME.app" "$APP_NAME-mac.zip"
+
+      - name: Create DMG with dmgbuild
+        run: |
+          python - <<'PY'
+          import dmgbuild, os
+          app_name = os.environ['APP_NAME']
+          app_path = f"dist/{app_name}.app"
+          dmg_name = f"{app_name}.dmg"
+          settings = {
+              'volume_name': app_name,
+              'format': 'UDZO',
+              'compression_level': 9,
+              'applications_link': True,   # adds /Applications shortcut
+              'icon_size': 128,
+              'window_rect': ((100, 100), (600, 400)),
+              'default_view': 'icon-view',
+              'icon_locations': {
+                  f'{app_name}.app': (140, 200),
+                  'Applications': (460, 200),
+              },
+          }
+          dmgbuild.build_dmg(dmg_name, [app_path], settings)
+          PY
+
+      - name: Upload artifacts (ZIP + DMG)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-mac
+          path: |
+            ${{ env.APP_NAME }}-mac.zip
+            ${{ env.APP_NAME }}.dmg
