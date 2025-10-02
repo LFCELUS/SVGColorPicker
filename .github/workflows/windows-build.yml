@@ -1,0 +1,65 @@
+name: Windows App Build (PyQt5)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    env:
+      APP_NAME: "Schematic Color Picker"
+      ENTRYPOINT: "ui.py"         # change if your launcher differs
+      DATA_SVG: "bin\\svg"                   # note backslashes on Windows source side
+      DATA_THEMES: "bin\\themes"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build .exe with PyInstaller
+        run: |
+          & pyinstaller `
+            --clean `
+            --windowed `
+            --noconfirm `
+            --name "${env:APP_NAME}" `
+            --hidden-import PyQt5.QtSvg `
+            --collect-submodules PyQt5.QtSvg `
+            --add-data "${env:DATA_SVG};bin/svg" `
+            --add-data "${env:DATA_THEMES};bin/themes" `
+            "${env:ENTRYPOINT}"
+
+          # optional: show result
+          Get-ChildItem -Recurse dist
+
+      - name: Verify build (PowerShell)
+        run: |
+          Get-ChildItem -Recurse dist
+          if (-not (Test-Path ("dist/" + ${env:APP_NAME}))) {
+            Write-Error "App folder not found: dist/${env:APP_NAME}"
+            exit 1
+          }
+
+      - name: Zip app folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist\${env:APP_NAME}\*" -DestinationPath "${env:APP_NAME}-win.zip"
+
+      - name: Upload artifact (ZIP)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-win
+          path: ${{ env.APP_NAME }}-win.zip
