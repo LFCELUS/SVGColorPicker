@@ -35,12 +35,15 @@ jobs:
             --clean `
             --windowed `
             --noconfirm `
-            --name "%APP_NAME%" `
+            --name "${env:APP_NAME}" `
             --hidden-import PyQt5.QtSvg `
             --collect-submodules PyQt5.QtSvg `
-            --add-data "%DATA_SVG%;bin/svg" `
-            --add-data "%DATA_THEMES%;bin/themes" `
-            ui.py
+            --add-data "${env:DATA_SVG};bin/svg" `
+            --add-data "${env:DATA_THEMES};bin/themes" `
+            "${env:ENTRYPOINT}"
+
+          # optional: show result
+          Get-ChildItem -Recurse dist
 
       - name: Verify build
         run: |
