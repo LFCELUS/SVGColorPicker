@@ -45,10 +45,13 @@ jobs:
           # optional: show result
           Get-ChildItem -Recurse dist
 
-      - name: Verify build
+      - name: Verify build (PowerShell)
         run: |
-          dir dist
-          if not exist "dist\%APP_NAME%" exit 1
+          Get-ChildItem -Recurse dist
+          if (-not (Test-Path ("dist/" + ${env:APP_NAME}))) {
+            Write-Error "App folder not found: dist/${env:APP_NAME}"
+            exit 1
+          }
 
       - name: Zip app folder
         shell: pwsh
